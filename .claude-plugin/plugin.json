@@ -1,0 +1,17 @@
+{
+  "name": "ownership-guard",
+  "description": "A codebase ownership guard for AI-assisted work. Always on: a light brief before Claude builds, an understanding check before a task counts as done, and per-task decision notes. Two modes: working (know what was done, where and why) and learning (understand it as if you wrote it).",
+  "version": "0.1.0",
+  "author": {
+    "name": "Wojciech Ziembowicz"
+  },
+  "license": "MIT",
+  "keywords": [
+    "learning",
+    "code-ownership",
+    "vibe-coding",
+    "understanding",
+    "handover",
+    "decision-log"
+  ]
+}

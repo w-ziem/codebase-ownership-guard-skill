@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "\"${BASH:-bash}\" \"${CLAUDE_PLUGIN_ROOT}/hooks/guard\" session-start",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "\"${BASH:-bash}\" \"${CLAUDE_PLUGIN_ROOT}/hooks/guard\" prompt",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

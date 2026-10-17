@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# ownership-guard hook.
+#   guard session-start  -> prints the active mode's rules (added to session context)
+#   guard prompt         -> prints a one-line mode reminder (added to every prompt)
+#   guard mode           -> prints "<mode> <source>" (used by the /guard skill)
+#
+# Uses bash builtins only: Claude Code can start SessionStart hooks with a
+# broken PATH, and on Windows this runs under Git Bash. Never fails the session:
+# any problem ends in exit 0 with no output.
+
+event="${1:-session-start}"
+
+case "$0" in
+  */*|*\\*) here="${0%[/\\]*}" ;;
+  *) here="." ;;
+esac
+root="${CLAUDE_PLUGIN_ROOT:-$here/..}"
+home="${HOME:-${USERPROFILE:-}}"
+project="${CLAUDE_PROJECT_DIR:-$PWD}"
+
+valid='^(working|learning|off)$'
+
+# Reads a mode file; prints the mode if the file holds a valid one.
+read_mode_file() {
+  local f="$1" m
+  [[ -r "$f" ]] || return 1
+  m="$(<"$f")"
+  m="${m//[$'\r\n\t ']/}"
+  [[ "$m" =~ $valid ]] || return 1
+  printf '%s' "$m"
+}
+
+# Precedence: env var > this repo > global > default.
+mode="" source=""
+if [[ "${OWNERSHIP_GUARD_MODE:-}" =~ $valid ]]; then
+  mode="$OWNERSHIP_GUARD_MODE"; source="env OWNERSHIP_GUARD_MODE"
+elif mode="$(read_mode_file "$project/.untracked/guard-mode")"; then
+  source="repo override $project/.untracked/guard-mode"
+elif [[ -n "$home" ]] && mode="$(read_mode_file "$home/.claude/ownership-guard/mode")"; then
+  source="global ~/.claude/ownership-guard/mode"
+else
+  mode="working"; source="default (no mode file yet)"
+fi
+
+# Pipe through cat when available: on Windows the harness can close stdout
+# early and Git Bash's printf would report EPIPE as an error.
+emit() {
+  if command -v cat >/dev/null 2>&1; then
+    printf '%s\n' "$1" | cat
+  else
+    printf '%s\n' "$1"
+  fi
+}
+
+read_rules() {
+  local f="$root/modes/$1.md"
+  [[ -r "$f" ]] && printf '%s' "$(<"$f")"
+}
+
+case "$event" in
+  mode)
+    emit "$mode $source"
+    ;;
+  session-start)
+    if [[ "$mode" == "off" ]]; then
+      emit "ownership-guard is OFF ($source). Do not run briefs, gates or decision notes. The user can turn it back on with /guard working or /guard learning."
+      exit 0
+    fi
+    common="$(read_rules common)"
+    specific="$(read_rules "$mode")"
+    [[ -n "$common" && -n "$specific" ]] || exit 0
+    emit "<ownership-guard mode=\"$mode\" source=\"$source\">
+$common
+
+$specific
+</ownership-guard>"
+    ;;
+  prompt)
+    [[ "$mode" == "off" ]] && exit 0
+    emit "[ownership-guard: $mode] Real task -> brief first, understanding check before you call it done, decision note in .untracked/decisions/. Trivial edits, questions and an explicit skip are exempt."
+    ;;
+esac
+exit 0

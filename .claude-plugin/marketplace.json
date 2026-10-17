@@ -1,0 +1,13 @@
+{
+  "name": "ownership-guard",
+  "owner": {
+    "name": "Wojciech Ziembowicz"
+  },
+  "plugins": [
+    {
+      "name": "ownership-guard",
+      "source": "./",
+      "description": "Always-on understanding gate for AI-assisted coding, with working and learning modes."
+    }
+  ]
+}
