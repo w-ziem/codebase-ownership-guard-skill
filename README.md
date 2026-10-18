@@ -32,7 +32,7 @@ You don't only need to understand the diff. You need the diff **plus the existin
 Inside a Claude Code session (terminal app):
 
 ```
-/plugin marketplace add <github-user>/ownership-guard
+/plugin marketplace add w-ziem/codebase-ownership-guard-skill
 /plugin install ownership-guard@ownership-guard
 ```
 
@@ -91,10 +91,26 @@ Skill names are namespaced by the plugin (`/ownership-guard:guard`). The short `
 | `guard` | Switch or show the mode |
 | `brief` | Automatically, before Claude builds a real task |
 | `handover` | Automatically, before Claude reports a task as done, and when a task gets blocked or interrupted (records the state so you can resume) |
-| `recall` | "Where is X from ABC-123?", "what did I do this week?", standup prep. Answers from the notes, verified against current code |
+| `recall` | "Where is X from ABC-123?", "what did we do in case-management?", "what did I do this week?", standup prep. Answers from the notes, verified against current code |
+| `scope` | Opt-in orchestration of a big piece of connected work: `plan`, `dispatch <TASK>` (prints a prompt for a new session), `status`, `close` |
 | `practice` | A hands-on exercise on your own code: locate, trace, predict, refactor, extend, break-and-fix |
 
 What's exempt: questions, exploration, trivial edits, and anything you say "skip" to. If you already discussed the approach with Claude in the session (brainstorm, plan mode), the brief counts as done.
+
+## Connected tasks
+
+Tasks are often links in one flow: prerequisites of each other, the same area, the same epic. There are two ways to handle that, and both write the same notes.
+
+**Task by task (default, nothing to do).** You keep working one ticket at a time, with no planning up front. Every brief looks for earlier notes that touch the same files as this task's dependency radius, or that share its `Scope:` tag. When it finds one, it either follows the earlier decision ("follows ABC-101: status is computed in the trigger, not a flow, because of bulk") or proposes changing it and names what that would touch. A changed decision gets recorded in both notes, so `/recall ABC-101` stays truthful. The `Scope:` tag fills itself in from the epic, an earlier note, or the area you mention, and `/recall <scope>` uses it to assemble the whole flow.
+
+**Planned scope (`/scope`).** Use this when you know up front that it's one big piece and you want an orchestrator session:
+
+1. `/scope plan case-management`: one brief for the whole flow, cross-task decisions, a split into tasks, and the scope file `.untracked/decisions/case-management.md` with a task table.
+2. `/scope dispatch ABC-102`: refreshes the task note and prints a short prompt to paste into a new session. The files carry the context, so the prompt only points at them. The task session skips its own brief (it was done in the orchestrator) and runs the normal task gate.
+3. `/scope status`: rebuilds the task table from the task notes and flags conflicts.
+4. `/scope close`: the scope gate, with questions that cross task boundaries.
+
+If task-by-task work turns out big, `/scope plan` adopts the notes that are already tagged. The same scope file also works if you stay in one session.
 
 ## How it works
 
@@ -106,11 +122,13 @@ What's exempt: questions, exploration, trivial edits, and anything you say "skip
 
 ```markdown
 # ABC-123 — <title>
+Scope: case-management   ← or none
+Brief: done here | done in orchestrator | skipped
 ## Status
 ## Goal & assumptions
 ## What changed          ← path:line + what/why
 ## Relies on             ← dependency radius
-## Decisions             ← choice, reason, rejected alternative
+## Decisions             ← choice, reason, rejected alternative; [changed in ABC-104] entries
 ## Open / next           ← how to resume
 ## Understanding         ← passed | partially explained | skipped by user
 ```

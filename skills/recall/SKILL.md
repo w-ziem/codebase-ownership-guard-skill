@@ -16,6 +16,8 @@ Question: `$ARGUMENTS`
    - status and anything open.
 4. If there is no note, say so plainly, then answer from the code and git history (`git log -S`, `git log --grep=<KEY>`) and offer to create the note.
 
+**For a scope** (`/recall case-management`): read the scope file if one exists, plus every note tagged `Scope: <name>`. Answer with the flow end to end (which task built which part, in order), the cross-task decisions including any `[changed in …]` entries, and what is still open.
+
 For a standup/summary request: one line per task — key, status, what moved, blocker if any.
 
 Recall is not a quiz — never ask questions here unless the user asks to be tested.

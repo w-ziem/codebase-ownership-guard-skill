@@ -43,6 +43,8 @@ The note is the user's memory of the work, written as you go, not only at the en
 
 ```markdown
 # ABC-123 — <short title>
+Scope: <scope-name | none>
+Brief: done here | done in orchestrator <date> | skipped
 
 ## Status
 done | in progress | blocked by <what> — <date>
@@ -68,6 +70,16 @@ done | in progress | blocked by <what> — <date>
 
 Write or update the note: when the gate finishes; when a task gets blocked or interrupted by another task (record exact state so it can be resumed); when a significant decision is made mid-task. Keep it short — this is a ledger, not documentation. Never put quiz questions in the note.
 
+## Connected tasks (scope)
+
+Tasks often form one flow — prerequisites of each other, the same area, the same epic — without anyone planning that up front. The user works task by task and expects you to remember what earlier tasks chose. The notes are that memory, not the session:
+
+- **Scope tag.** Fill `Scope:` when there is evidence: the ticket's epic/parent, the user naming the area ("still case management"), or an overlapping earlier note that already has a scope. Reuse an existing scope name exactly (check the tags already in the folder); never ask the user to maintain tags. `none` is fine.
+- **Related work.** In every brief, find earlier notes whose `What changed` / `Relies on` paths overlap this task's dependency radius, or that share its scope. Read their `Decisions`, verify them against the current code (someone may have changed it since), and either follow them or propose changing them — see `ownership-guard:brief`.
+- **Changed earlier decision.** When this task changes something an earlier task decided, record it in both notes: here under Decisions, and in the old note's Decisions as `- [changed in ABC-104, <date>] <what and why>`. A recall of the old ticket must not lie.
+- **Planned scope (optional).** Only when the user runs `/scope` does a scope file exist: `.untracked/decisions/<scope>.md`, starting with `# Scope: <name>`, holding the flow, cross-task decisions and the task list. An orchestrator session plans the scope and dispatches its tasks to separate sessions (`ownership-guard:scope`). Without `/scope` the tags are enough.
+- **Orchestrator sessions** — sessions that only plan and dispatch, writing no code — run the scope brief and the scope gate, never task gates. A task session whose note says `Brief: done in orchestrator` skips its own brief except for anything the scope plan did not cover, and runs the normal task gate at the end.
+
 **`.untracked/` must never be committed.** Before the first write in a repo, run `git check-ignore -q .untracked/x` (if it is a git repo). If it is not ignored, stop and tell the user; offer to add `.untracked/` to their global git excludes file (`git config --global core.excludesFile`, default `~/.config/git/ignore`). Do not change git config without a yes.
 
 ## Questions: how to ask them
@@ -84,4 +96,4 @@ These rules apply in every mode:
 
 The active mode is shown in the tag above and in a short reminder on every prompt. `/guard working | learning | off | status` switches it (skill `ownership-guard:guard`). If the user says to change the mode for this session only ("na tę sesję bez guarda"), honour that until the session ends even though the reminder still shows the stored mode.
 
-Other skills: `ownership-guard:recall` answers "where is X from ABC-123 / what did we do in …" from the notes and the code; `ownership-guard:practice` gives a hands-on exercise (mainly learning mode).
+Other skills: `ownership-guard:recall` answers "where is X from ABC-123 / what did we do in <scope>" from the notes and the code; `ownership-guard:scope` plans a scope and dispatches its tasks to separate sessions; `ownership-guard:practice` gives a hands-on exercise (mainly learning mode).

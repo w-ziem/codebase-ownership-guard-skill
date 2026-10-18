@@ -47,5 +47,6 @@ Pick questions where a wrong answer would hurt them later: the decision a review
 When the answers are in (or the user says skip):
 
 1. Update the decision note: `Status: done — <date>`, what changed, relies on, decisions, open/next, and `Understanding: passed | partially explained | skipped by user` with one line on what was covered. No questions or answers in the note.
-2. Append to `.untracked/ownership/known.md` only what the user demonstrated in their own words (create the file with a `# Known` heading if missing).
-3. One closing line: the task is done, where the note is. In learning mode, add the one-line practice offer.
+2. If this task changed an earlier task's decision, add the `[changed in <KEY>, <date>]` line to that older note. If the note's scope has a scope file (planned scope), update this task's line in its task list (status + one-line outcome) and add any cross-task decision to it.
+3. Append to `.untracked/ownership/known.md` only what the user demonstrated in their own words (create the file with a `# Known` heading if missing).
+4. One closing line: the task is done, where the note is (in a dispatched session: tell the user they can return to the orchestrator). In learning mode, add the one-line practice offer.
